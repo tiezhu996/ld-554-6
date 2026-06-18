@@ -1,7 +1,7 @@
 import { Op, type WhereOptions } from 'sequelize';
 import { Shift, Employee, Store } from '../models/index.js';
 import { getPagination } from '../utils/pagination.js';
-import { storeScope } from './scope.service.js';
+import { storeScope, enforceStoreScope } from './scope.service.js';
 import type { AuthUser } from '../types/request.js';
 
 export async function listShifts(query: Record<string, unknown>, user?: AuthUser) {
@@ -10,6 +10,7 @@ export async function listShifts(query: Record<string, unknown>, user?: AuthUser
   if (query.storeId) Object.assign(where, { storeId: query.storeId });
   if (query.shiftType) Object.assign(where, { shiftType: query.shiftType });
   if (query.startDate && query.endDate) Object.assign(where, { date: { [Op.between]: [query.startDate, query.endDate] } });
+  enforceStoreScope(where, user);
   const { rows, count } = await Shift.findAndCountAll({ where, limit, offset, include: [Employee, Store], order: [['date', 'ASC']] });
   return { list: rows, total: count, page, pageSize };
 }

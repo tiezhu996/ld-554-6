@@ -9,6 +9,13 @@ export function storeScope(user?: AuthUser): WhereOptions {
   return {};
 }
 
+export function enforceStoreScope(where: WhereOptions, user?: AuthUser): WhereOptions {
+  if (user?.role === UserRole.MANAGER && user.storeId) {
+    (where as Record<string, unknown>).storeId = user.storeId;
+  }
+  return where;
+}
+
 export function directStoreScope(user?: AuthUser): WhereOptions {
   if (!user || user.role === UserRole.OWNER) return {};
   if (user.storeId) return { id: user.storeId };

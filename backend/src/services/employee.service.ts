@@ -1,7 +1,7 @@
 import { Op, type WhereOptions } from 'sequelize';
 import { Employee, Shift, Store, Transaction } from '../models/index.js';
 import { getPagination } from '../utils/pagination.js';
-import { storeScope } from './scope.service.js';
+import { storeScope, enforceStoreScope } from './scope.service.js';
 import type { AuthUser } from '../types/request.js';
 
 function buildEmployeeNo() {
@@ -17,6 +17,7 @@ export async function listEmployees(query: Record<string, unknown>, user?: AuthU
   if (query.status) Object.assign(where, { status: query.status });
   if (query.storeId) Object.assign(where, { storeId: query.storeId });
   if (query.keyword) Object.assign(where, { name: { [Op.like]: `%${query.keyword}%` } });
+  enforceStoreScope(where, user);
   const { rows, count } = await Employee.findAndCountAll({ where, limit, offset, include: [Store], order: [['id', 'DESC']] });
   return { list: rows, total: count, page, pageSize };
 }

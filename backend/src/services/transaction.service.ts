@@ -1,7 +1,7 @@
 import { type WhereOptions } from 'sequelize';
 import { Transaction, Employee, Store } from '../models/index.js';
 import { getPagination } from '../utils/pagination.js';
-import { storeScope } from './scope.service.js';
+import { storeScope, enforceStoreScope } from './scope.service.js';
 import type { AuthUser } from '../types/request.js';
 
 export async function listTransactions(query: Record<string, unknown>, user?: AuthUser) {
@@ -10,6 +10,7 @@ export async function listTransactions(query: Record<string, unknown>, user?: Au
   if (query.type) Object.assign(where, { type: query.type });
   if (query.category) Object.assign(where, { category: query.category });
   if (query.storeId) Object.assign(where, { storeId: query.storeId });
+  enforceStoreScope(where, user);
   const { rows, count } = await Transaction.findAndCountAll({
     where,
     limit,
