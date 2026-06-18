@@ -26,7 +26,12 @@ export async function updateShift(id: number, payload: Record<string, unknown>) 
 
 export async function autoGenerateShifts(storeId: number, date: string) {
   const employees = await Employee.findAll({ where: { storeId }, limit: 6 });
-  const types = ['MORNING', 'AFTERNOON'] as const;
+  const types = ['MORNING', 'AFTERNOON', 'NIGHT'] as const;
+  const times = [
+    { startTime: '08:00:00', endTime: '12:00:00' },
+    { startTime: '13:00:00', endTime: '17:00:00' },
+    { startTime: '18:00:00', endTime: '22:00:00' }
+  ] as const;
   return Promise.all(
     employees.map((employee, index) =>
       Shift.create({
@@ -34,8 +39,8 @@ export async function autoGenerateShifts(storeId: number, date: string) {
         storeId,
         date,
         shiftType: types[index % types.length],
-        startTime: index % 2 === 0 ? '08:00:00' : '13:00:00',
-        endTime: index % 2 === 0 ? '12:00:00' : '17:00:00',
+        startTime: times[index % times.length].startTime,
+        endTime: times[index % times.length].endTime,
         status: 'PENDING'
       })
     )

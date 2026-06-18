@@ -15,9 +15,9 @@
       <el-button @click="load">刷新</el-button>
     </div>
     <div class="panel week-board">
-      <div v-for="day in weekDays" :key="day" class="day-col">
-        <strong>{{ day }}</strong>
-        <article v-for="shift in shifts.list.filter((item) => item.date.startsWith(day.slice(-2)))" :key="shift.id" draggable="true">
+      <div v-for="day in weekDays" :key="day.date" class="day-col">
+        <strong>{{ day.label }}</strong>
+        <article v-for="shift in shifts.list.filter((item) => item.date === day.date)" :key="shift.id" draggable="true">
           <EmployeeAvatar :name="shift.employee?.name ?? `员工 ${shift.employeeId}`" :employee-no="shift.employee?.employeeNo ?? 'EMP'" size="sm" />
           <el-tag>{{ ShiftTypeLabel[shift.shiftType as keyof typeof ShiftTypeLabel] }}</el-tag>
           <small>{{ shift.startTime }} - {{ shift.endTime }}</small>
@@ -54,7 +54,19 @@ import { useShiftStore } from '@/stores/shiftStore';
 const shifts = useShiftStore();
 const filters = reactive<Record<string, unknown>>({});
 const formVisible = ref(false);
-const weekDays = ['06-15', '06-16', '06-17', '06-18', '06-19', '06-20', '06-21'];
+const weekDayNames = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+const weekDays = (() => {
+  const now = new Date();
+  const dayOfWeek = now.getDay();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - ((dayOfWeek + 6) % 7));
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const date = d.toISOString().slice(0, 10);
+    return { date, label: `${weekDayNames[i]} ${date.slice(5)}` };
+  });
+})();
 
 async function load() {
   await shifts.load(filters);

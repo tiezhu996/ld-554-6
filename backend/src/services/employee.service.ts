@@ -6,7 +6,7 @@ import type { AuthUser } from '../types/request.js';
 
 function buildEmployeeNo() {
   const date = new Date().toISOString().slice(0, 10).replaceAll('-', '');
-  const suffix = String(Math.floor(Math.random() * 90) + 10);
+  const suffix = String(Math.floor(Math.random() * 900) + 100).padStart(3, '0');
   return `EMP-${date}-${suffix}`;
 }
 
